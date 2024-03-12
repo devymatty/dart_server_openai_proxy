@@ -1,30 +1,39 @@
-import 'dart:convert';
 import 'dart:io';
-import 'dart:async';
 import 'package:http/http.dart' as http;
 
 Future<void> main() async {
-  var server = await HttpServer.bind(InternetAddress.anyIPv4, 8080);
-  print('Прокси сервер запущен на порту ${server.port}...');
+  // Создание HTTP сервера, который слушает localhost на порту 8080
+  var server = await HttpServer.bind('localhost', 8080);
+  print('Сервер запущен на http://${server.address.host}:${server.port}');
 
-  await for (HttpRequest request in server) {
-    print(request.uri);
+  // Обработка всех входящих запросов
+  await for (var request in server) {
+    // URL-адрес, на который будут перенаправляться запросы
+    var targetUrl = Uri.parse('http://example.com');
 
-    Uri targetUri = Uri.parse('https://api.openai.com'); // Укажите целевой URL
+    // Создание нового URI с заменой схемы, хоста и порта на целевые,
+    // но сохранением пути и параметров запроса
+    var forwardedUri = targetUrl.replace(
+      path: request.uri.path,
+      queryParameters: request.uri.queryParameters,
+    );
 
-    http.Request proxyRequest = http.Request(request.method, targetUri)
-      ..headers.addAll(request.headers as Map<String, String>)
-      ..body = await utf8.decoder.bind(request).join();
+    try {
+      // Перенаправление запроса на целевой URL
+      var response = await http.get(forwardedUri);
 
-    // Игнорирование Content-Length может привести к ошибкам, если тело изменено
-    proxyRequest.headers.remove('content-length');
-
-    http.StreamedResponse response = await http.Client().send(proxyRequest);
-
-    request.response
-      ..statusCode = response.statusCode
-      ..headers.contentType = ContentType.parse(response.headers['content-type']!);
-
-    await response.stream.pipe(request.response);
+      // Пересылка ответа от целевого сервера клиенту
+      request.response
+        ..statusCode = response.statusCode
+        ..headers.contentType = ContentType.parse(response.headers['content-type']!)
+        ..write(response.body)
+        ..close();
+    } catch (e) {
+      // Обработка ошибок, например, если целевой сервер недоступен
+      request.response
+        ..statusCode = HttpStatus.internalServerError
+        ..write('Произошла ошибка: $e')
+        ..close();
+    }
   }
 }
