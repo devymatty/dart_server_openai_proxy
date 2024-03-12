@@ -8,6 +8,8 @@ Future<void> main() async {
   print('Прокси сервер запущен на порту ${server.port}...');
 
   await for (HttpRequest request in server) {
+    print(request.uri);
+
     Uri targetUri = Uri.parse('https://api.openai.com'); // Укажите целевой URL
 
     http.Request proxyRequest = http.Request(request.method, targetUri)
