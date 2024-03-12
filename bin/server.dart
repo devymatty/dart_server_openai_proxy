@@ -9,7 +9,7 @@ Future<void> main() async {
   // Обработка всех входящих запросов
   await for (var request in server) {
     // URL-адрес, на который будут перенаправляться запросы
-    var targetUrl = Uri.parse('http://example.com');
+    var targetUrl = Uri.parse('https://api.openai.com');
 
     // Создание нового URI с заменой схемы, хоста и порта на целевые,
     // но сохранением пути и параметров запроса
