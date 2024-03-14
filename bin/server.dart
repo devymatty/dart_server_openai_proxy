@@ -6,6 +6,7 @@ void main() async {
   print('Прокси-сервер запущен на http://${server.address.address}:${server.port}');
 
   await for (HttpRequest request in server) {
+    print(request.uri);
     var client = http.Client();
     try {
       // Измените URL на адрес API, к которому вы хотите обратиться
