@@ -18,6 +18,9 @@ Future<void> main() async {
       queryParameters: request.uri.queryParameters,
     );
 
+    print(forwardedUri);
+    print(targetUrl);
+
     try {
       // Перенаправление запроса на целевой URL
       var response = await http.get(forwardedUri);
