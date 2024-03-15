@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 void main() async {
-  var server = await HttpServer.bind(InternetAddress.loopbackIPv4, 9728);
+  var server = await HttpServer.bind(InternetAddress.anyIPv4, 9728);
   print('Прокси-сервер запущен на http://${server.address.address}:${server.port}');
 
   await for (HttpRequest request in server) {
